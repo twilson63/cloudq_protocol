@@ -11,14 +11,15 @@ __-- Wikipedia__
 
 The cloudq protocol is a simple format for generic job queue processing.  By using a standard and simple format, we can implement remote or internal job queues and workers in any language and technology.  _The concept comes from some of the Ruby internal job queue processes like Delayed Job and Resque._ 
 
-The protocol uses [JSON](http://www.json.org) JavaScript Object Notation.  This is one of the current standards on the we and brings a concise and readable format that virtually every language can understand.
+The protocol uses [JSON](http://www.json.org) JavaScript Object Notation.  This is one of the current standards on the web and brings a concise and readable format that virtually every language can understand.
 
 ## The Job
 
-The Job is broken down into 2 nodes:
+The Job is broken down into 2-3 nodes:
 
 * klass - String
 * args - Array
+* id - String (Should be unique to the queue and assigned by the server)
 
 The class is the name of the object you would for the job to call, and the args is an Array of arguments that you would like to pass to the perform class method on the object.
 
