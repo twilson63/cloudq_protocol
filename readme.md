@@ -115,6 +115,22 @@ Building producers and consumers become very easy using the common cloudq protoc
 * [node-cloudqclient] Coming Soon
 
 
-    
-    
-    
+
+## Questions
+
+* What about authentication?
+* What about encryption?
+* What about monitoring?
+
+All of these are great questions, but these items have been implemented very well
+using other technologies, there is no point in re-inventing the well.  With the 
+Ruby Cloudq server, we use Rack Middleware to inject our needs in the queue server, 
+without affecting the core of the cloudq.  The cloudq server should focus on the 
+management of the jobs on a queue, not other issues.
+
+
+* What about scheduling?
+
+Implement a worker process that receives a job to be scheduled, then published the 
+scheduled job when the alarm triggers.
+
