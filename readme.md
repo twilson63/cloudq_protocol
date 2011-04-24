@@ -33,13 +33,15 @@ This job is asking a worker to call the perform method on a Class called Archive
 The consumer will pull the job from the queue and execute the perform method
 on the specified class.
 
-    class Archive
-      def perform(*args)
-        puts "Archived - #{args.first['data']}"
-      end
-    end
-    
-    #=> Archived - foobar
+''' ruby
+class Archive
+  def perform(*args)
+    puts "Archived - #{args.first['data']}"
+  end
+end
+
+#=> Archived - foobar
+'''
 
 By keeping the cloudq job protocol this simple, it allows for a very easy implementation of producers, brokers, and consumers.  Any language or technology
 can implement, so you can have producers in ruby, queues in erlang, and consumers 
