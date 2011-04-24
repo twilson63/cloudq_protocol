@@ -71,7 +71,7 @@ This simple server implementation is very easy to create and easy to create prod
 
 When implementing a queue server, you can use any backend storage system, based on your needs.
 
-## Producer and Consumers
+## Producers and Consumers
 
 Building producers and consumers become very easy using the common cloudq protocol and server RESTful interface.  Here is an example in raw curl:
 
@@ -99,6 +99,20 @@ Building producers and consumers become very easy using the common cloudq protoc
     
     curl -X DELETE http://my.cloudq.com/archive_queue/123456789
     
+
+---
+
+# Examples
+
+## Server Implementations
+
+* [Cloudq](https://github.com/twilson63/cloudq)
+
+## Client Implementations
+
+* [Cloudq_client](https://github.com/twilson63/cloudq_client)
+* [node-cloudqclient] Coming Soon
+
 
     
     
