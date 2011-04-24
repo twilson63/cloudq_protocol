@@ -77,7 +77,8 @@ Building producers and consumers become very easy using the common cloudq protoc
 
     # publish job
     
-    curl -X POST -H "Content-Type:application/json" -d '{ "job": {"klass": "Archive", "args": [{"data": "foobar"}]}}' http://my.cloudq.com/archive_queue
+    curl -X POST -H "Content-Type:application/json"  \ 
+    -d '{ "job": {"klass": "Archive", "args": [{"data": "foobar"}]}}' http://my.cloudq.com/archive_queue
     
     # response
     { "status": "success" }
