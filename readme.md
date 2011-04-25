@@ -22,12 +22,11 @@ Don't they make AMQP and The Enterprise Service Bus?  Yeah!
 
 But what if you don't all that jazz, what if you just want to put a job on a stack, and have a collection of workers pick it from that stack and perform the job?
 
-Well, I have not found much in this space and what I found has a different implementation.  Why not come together and create a common implementation standard so that the develper can choose which queue system they would like to use, but not have to change their codebase to implement it.  If each queue worker system implemented the same specification, then the app developer could swap the system out based on their needs.
+Well, I have not found much in this space and what I found has a different implementation.  Why not come together and create a common implementation standard so that the developer can choose which queue system they would like to use, but not have to change their codebase to implement it.  If each queue worker system implemented the same specification, then the app developer could swap the system out based on their needs.
 
 This protocol is a first step or shout out in this direction.
 
-If you have any feedback or want to contribute please email cloudq@jackhq.com
-
+If you have any feedback or want to contribute please email cloudq@jackhq.com or follow and tweet to [@cloudq_protocol](http://twitter.com/cloudq_protocol)
 
 
 
