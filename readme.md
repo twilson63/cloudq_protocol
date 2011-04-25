@@ -9,11 +9,14 @@ A communications protocol is a formal description of digital message formats and
 __-- Wikipedia__
 
 
-The cloudq protocol is a simple format for generic job queue processing.  By using a standard and simple format, we can implement remote or internal job queues and workers in any language and technology.  _The concept comes from some of the Ruby internal job queue processes like Delayed Job and Resque._ 
+The cloudq protocol is a simple format for generic job queue processing.  
 
-The protocol uses [JSON](http://www.json.org) JavaScript Object Notation.  This is one of the current standards on the web and brings a concise and readable format that virtually every language can understand.
+Using a simple format, we can implement remote or internal job queues and workers in any language and technology.  _The concept comes from some of the Ruby internal job queue processes like Delayed Job and Resque._ 
 
-## The Job
+The protocol uses [JSON](http://www.json.org) JavaScript Object Notation.  JSON has serializers and deserializers implemented in several languages.  See the JSON homepage for more details.
+
+
+## The Job (Message)
 
 The Job is broken down into 2-3 nodes:
 
@@ -36,7 +39,7 @@ on the specified class.
 
 ``` ruby
 class Archive
-  def perform(*args)
+  def self.perform(*args)
     puts "Archived - #{args.first['data']}"
   end
 end
@@ -44,10 +47,9 @@ end
 #=> Archived - foobar
 ```
 
-By keeping the cloudq job protocol this simple, it allows for a very easy implementation of producers, brokers, and consumers.  Any language or technology
+By keeping the cloudq job protocol this simple, it allows for a very easy implementation of producers, brokers, and consumers.  Any technology
 can implement, so you can have producers in ruby, queues in erlang, and consumers 
-in javascript.  And they are able to communicate, because they share the same universal
-concept of a job.
+in javascript.  And they are able to communicate with each other, because they share the same universal concept of a job.
 
 ### The broker
 
@@ -57,24 +59,21 @@ The broker needs to implement 3 basic functions:
 * reserve
 * delete
 
-It is recommended to use RESTful techniques to implement these functionalities, but it does not really matter.  Here is a common implementation:
+It is recommended to use RESTful techniques to implement these methods.  Here is a common implementation:
 
     # Publish Job
     POST /[queue name]
 
     # Reserve Job
     GET /[queue name]
-    
+
     # Delete Job
     DELETE /[queue name]/[job id]
-    
-This simple server implementation is very easy to create and easy to create producer and consumer clients to the queue.  
 
-When implementing a queue server, you can use any backend storage system, based on your needs.
 
 ## Producers and Consumers
 
-Building producers and consumers become very easy using the common cloudq protocol and server RESTful interface.  Here is an example in raw curl:
+Building producers and consumers using the common cloudq protocol.   Here is an example in raw curl:
 
     # publish job
     
@@ -122,12 +121,9 @@ Building producers and consumers become very easy using the common cloudq protoc
 * What about encryption?
 * What about monitoring?
 
-All of these are great questions, but these items have been implemented very well
-using other technologies, there is no point in re-inventing the well.  With the 
-Ruby Cloudq server, we use Rack Middleware to inject our needs in the queue server, 
-without affecting the core of the cloudq.  The cloudq server should focus on the 
-management of the jobs on a queue, not other issues.
+Since Cloudq Protocol is built on the basis of using http 1.1, then you can use toolkits like [Rack](http://rack.rubyforge.org/) and [Connect](http://senchalabs.github.com/connect/) to add middleware to your server.
 
+This middleware can contain authentication, encryption, logging, etc...
 
 * What about scheduling?
 
