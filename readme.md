@@ -1,5 +1,7 @@
 # Cloudq Protocol
 
+Cloudq Protocol is a common definition for implementing job worker processing.
+
 ## What is a protocol
 
 <blockquote>
@@ -7,6 +9,26 @@ A communications protocol is a formal description of digital message formats and
 </blockquote>
 
 __-- Wikipedia__
+
+## Why another Job Worker Queue?
+
+We have a ton of job workers queues implemented in all kinds of technologies from
+database driven to java, to anything you can think of.  Just like other spaces like
+web servers, and datastores.  It can be very confusing based on your needs and what is out there what exactly do you need?  Delayed Job?  RabbitMQ?  0MQ? etc?
+
+How do you know what you need, and when you implement one solution and out grow it, what do you do?  What if you need to access you queue outside of your application?
+
+Don't they make AMQP and The Enterprise Service Bus?  Yeah!
+
+But what if you don't all that jazz, what if you just want to put a job on a stack, and have a collection of workers pick it from that stack and perform the job?
+
+Well, I have not found much in this space and what I found has a different implementation.  Why not come together and create a common implementation standard so that the develper can choose which queue system they would like to use, but not have to change their codebase to implement it.  If each queue worker system implemented the same specification, then the app developer could swap the system out based on their needs.
+
+This protocol is a first step or shout out in this direction.
+
+If you have any feedback or want to contribute please email cloudq@jackhq.com
+
+
 
 
 The cloudq protocol is a simple format for generic job queue processing.  
