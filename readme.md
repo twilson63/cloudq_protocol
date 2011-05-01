@@ -1,40 +1,38 @@
 # Cloudq Protocol
 
-Cloudq Protocol is a common definition for implementing job worker processing.
+Cloudq Protocol is a protocol for implementing highly scalable job queue.
 
-## What is a protocol
+## How it works
 
-<blockquote>
-A communications protocol is a formal description of digital message formats and the rules for exchanging those messages in or between computing systems and in telecommunications. Protocols may include signaling, authentication and error detection and correction capabilities. A protocol describes the syntax, semantics, and synchronization of communication and may be implemented in hardware or software, or both.
-</blockquote>
+Three simple steps:
 
-__-- Wikipedia__
+1. Post a message to a queue 
+2. Get the first message available from the queue
+3. Delete a message from the queue  
 
-## Why another Job Worker Queue?
+By leveraging web technology you quickly develop highly scalable, easy accessible
+queues.
 
-We have a ton of job workers queues implemented in all kinds of technologies from
-database driven to java, to anything you can think of.  Just like other spaces like
-web servers, and datastores.  It can be very confusing based on your needs and what is out there what exactly do you need?  Delayed Job?  RabbitMQ?  0MQ? etc?
+The body of the message has 3 nodes.
 
-How do you know what you need, and when you implement one solution and out grow it, what do you do?  What if you need to access you queue outside of your application?
-
-Don't they make AMQP and The Enterprise Service Bus?  Yeah!
-
-But what if you don't all that jazz, what if you just want to put a job on a stack, and have a collection of workers pick it from that stack and perform the job?
-
-Well, I have not found much in this space and what I found has a different implementation.  Why not come together and create a common implementation standard so that the developer can choose which queue system they would like to use, but not have to change their codebase to implement it.  If each queue worker system implemented the same specification, then the app developer could swap the system out based on their needs.
-
-This protocol is a first step or shout out in this direction.
-
-If you have any feedback or want to contribute please email cloudq@jackhq.com or follow and tweet to [@cloudq_protocol](http://twitter.com/cloudq_protocol)
+- Job
+  - klass: { could be the object name you would like to perform the job}
+  - args:  { the data that is required to execute the job }
+  - id: {This is assigned by the server.}
 
 
 
-The cloudq protocol is a simple format for generic job queue processing.  
+## Pick or create a server.
 
-Using a simple format, we can implement remote or internal job queues and workers in any language and technology.  _The concept comes from some of the Ruby internal job queue processes like Delayed Job and Resque._ 
+## Design
 
-The protocol uses [JSON](http://www.json.org) JavaScript Object Notation.  JSON has serializers and deserializers implemented in several languages.  See the JSON homepage for more details.
+Cloudq piggyback on the Http Protocol and utilizing RESTful concepts.  By using the 
+http verbs POST, GET, DELETE, we are able to create a very skinny stack.
+
+The transport is in JSON, which is a protocol that is available in just about any language
+that uses the web.  
+
+Cloudq leverages the url to specify the queue name.
 
 
 ## The Job (Message)
