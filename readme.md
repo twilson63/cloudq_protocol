@@ -1,100 +1,131 @@
-# Cloudq Protocol
+# Cloudq Protocol v 0.1.0
 
-Cloudq Protocol is a protocol for implementing highly scalable job queue.
+Cloudq Protocol is a simple specification for implementing job queue.
 
-## How it works
+## Description
 
-Three simple steps:
+A job queue server allows you to send long running and unique processes
+to a set of provisioned workers to execute the jobs, while your core application
+can return quickly to the user to allow the user to perform other features in the
+application.  
 
-1. Post a message to a queue 
-2. Get the first message available from the queue
-3. Delete a message from the queue  
+Job Queues are mainly used for common background tasks like sending e-mail or 
+faxes, which may be behind your firewall on in your same network.  
 
-By leveraging web technology you quickly develop highly scalable, easy accessible
-queues.
+Cloudq gives you the capability of connecting remote workers to your queue.  For
+example, if you had a client that was in an environment that needed to pull data
+from a client server application to your cloud database for your e-commerce store.
+Or you needed to pull information down from your cloud database to a local application.
 
-The body of the message has 3 nodes.
+Cloudq would act as a broker between the two applications and allow you to post and
+consume jobs between the two systems via a SSL connection, without having to poll 
+you cloud application or cloud database.  
+
+Cloudq would give you the ability to run 1 to N cloudq servers and 1 to N cloudq
+workers.
+
+## Workflow
+
+An Application Posts a JOB to a Cloudq Server Queue, that JOB is set to a state
+of :new.  Then a Worker Requests (GET) a JOB from the Cloudq Server Queue, the 
+server sets the state of that JOB to :reserved and hands it to the worker.  The
+worker verifies that it go the JOB, then submits a DELETE request to the Cloudq 
+Server.  This changes the status of the JOB from :reserved to :deleted.  
+
+## Definition of a JOB
+
+A JOB is a structured message that contains a consistent structure that can be
+accepted and understood by any client.
+
+### JOB Format
+
+The JOB message format is in JSON a javascript object notation specification.
+[JSON](http://json.org)
+
+### Elements
 
 - Job
-  - klass: { could be the object name you would like to perform the job}
-  - args:  { the data that is required to execute the job }
-  - id: {This is assigned by the server.}
+  - klass: [STRING] { could be the object name you would like to perform the job}
+  - args:  [ARRAY] { the data that is required to execute the job }
+  - id: [UNIQUE] {This is assigned by the server.}
 
+### Example 
 
-
-## Pick or create a server.
-
-## Design
-
-Cloudq piggyback on the Http Protocol and utilizing RESTful concepts.  By using the 
-http verbs POST, GET, DELETE, we are able to create a very skinny stack.
-
-The transport is in JSON, which is a protocol that is available in just about any language
-that uses the web.  
-
-Cloudq leverages the url to specify the queue name.
-
-
-## The Job (Message)
-
-The Job is broken down into 2-3 nodes:
-
-* klass - String
-* args - Array
-* id - String (Should be unique to the queue and assigned by the server)
-
-The class is the name of the object you would for the job to call, and the args is an Array of arguments that you would like to pass to the perform class method on the object.
-
-### Example
-
-    { "job": {"klass": "Archive", "args": [{"data": "foobar"}]}}
-    
-This job is asking a worker to call the perform method on a Class called Archive, passing the data object as a single argument.
-
-### Consumer Example
-
-The consumer will pull the job from the queue and execute the perform method
-on the specified class.
-
-``` ruby
-class Archive
-  def self.perform(*args)
-    puts "Archived - #{args.first['data']}"
-  end
-end
-
-#=> Archived - foobar
+```
+ {
+"klass": "SendEmail",
+"args": ["from@email.com", "to@email.com", "SUBJECT: Hello", "BODY: Goodbye"],
+"id": "112345566"
+ }
 ```
 
-By keeping the cloudq job protocol this simple, it allows for a very easy implementation of producers, brokers, and consumers.  Any technology
-can implement, so you can have producers in ruby, queues in erlang, and consumers 
-in javascript.  And they are able to communicate with each other, because they share the same universal concept of a job.
+### Response Message
 
-### The broker
+The response message is the message that the cloudq server returns when a request
+is executed.  It is also in JSON Format and lets the client know if the request 
+was successful or not, and if not why.  This message contains two attributes:
 
-The broker needs to implement 3 basic functions:
+* status
+* message
 
-* publish
-* reserve
-* delete
+```
+{
+	"status": "success|error|empty",
+	"message": "Optional"
+}
+```
 
-It is recommended to use RESTful techniques to implement these methods.  Here is a common implementation:
+## How to implement your own cloudq server
 
-    # Publish Job
-    POST /[queue name]
+Implementing your cloudq server is pretty easy, first choose your language and 
+datastore.  Make sure your language can support the http protocol and has some
+good networking libraries.  Most languages have some awesome high level, http api libraries
+like Sinatra, Expressjs, etc.
 
-    # Reserve Job
-    GET /[queue name]
+The Cloudq server basically only needs to handle three http methods:
 
-    # Delete Job
-    DELETE /[queue name]/[job id]
+* POST /:queue
+* GET /:queue
+* DELETE /:queue/:id
 
+### POST /:queue
 
-## Producers and Consumers
+When a client requests a POST for a queue name the server needs to first make
+sure that JOB is valid, if the job is not valid then return a response message.
+
+_For our ruby and node implementations we use MongoDb and create a collection called jobs and the documents in the 
+jobs collection contain an attribute called :queue_
+
+### GET /:queue
+
+When a client performs a get request, they are requesting an items from the :queue, the 
+server should find a JOB with a status of :new and update that item to a status of :reserved
+then respond to the client with the JOB.  If there are no JOBS in a new status for that 
+queue then the server should return an empty response.
+
+### DELETE /:queue/:id
+
+When a client requests a DELETE JOB request, the server needs to locate the JOB and
+modify the status of the job to :deleted, and return a success response, if it can't
+find the job then return an error response or empty response.
+
+---
+
+The above is just a guideline, you can build and modify your server anyway you want, these methods and messages are 
+defined to be simple and easy to implement as a core JOB Queue, to allow for extremely easy implementations of clients
+in several different languages.
+
+---
+
+## Cloudq Client Implementation
+
+A Cloudq client has the ability to post a JOB to the Queue and the ability to reserve and delete a JOB.
+
+## cURL job examples...
 
 Building producers and consumers using the common cloudq protocol.   Here is an example in raw curl:
 
-    # publish job
+### publish job
     
     curl -X POST -H "Content-Type:application/json"  \ 
     -d '{ "job": {"klass": "Archive", "args": [{"data": "foobar"}]}}' http://my.cloudq.com/archive_queue
@@ -102,50 +133,67 @@ Building producers and consumers using the common cloudq protocol.   Here is an 
     # response
     { "status": "success" }
     
----
 
-    # consume job
+### consume job
     
     curl http://my.cloudq.com/archive_queue
     
-    # response
+### response
     
     { "job": {"klass": "Archive", "args": [{"data": "foobar"}], "id": "123456789"}}
     
----
     
-    # delete job
+### delete job
     
     curl -X DELETE http://my.cloudq.com/archive_queue/123456789
     
 
----
+## Build a user friendly api with your cloudq client
 
-# Examples
+If you are implementing a client you may want to create a simple api that makes it extremely easy for 
+the users of your client library to interact with the cloudq server.  
 
-## Server Implementations
+## For Example:
 
-* [Cloudq](https://github.com/twilson63/cloudq)
+To post a job you may want to allow the user to simple call:
 
-## Client Implementations
+CloudQClient.publish [QUEUE], [KLASS], [ARG1], [ARG2], [ARG3]
 
-* [Cloudq_client](https://github.com/twilson63/cloudq_client)
-* [node-cloudqclient] Coming Soon
+```
+client.publish "EMAIL-QUEUE", "WELCOME", "to@email.com", "subject", "body"
+```
+
+Then in your client library compose this into a json JOB object:
+
+```
+{
+	"klass": "WELCOME",
+	"args": ["to@email.com", "subject", "body"]
+}
+```
+
+And create a RESTful url to post the JOB to:
+
+```
+http://server.com/email-queue
+```
+
+Then execute a POST method on your http network client using the url and the JOB as the body of the request 
+method.
+
+Here is an example using cURL
+
+```
+curl -XPOST -H "Content-Type:application/json" -d '{"klass": "WELCOME", "args": ["to@email.com", "subject", "body"]}' http://server.com/email-queue
+```
+
+## For more ideas look at the ruby client implementation
+
+[Cloudq_client](https://github.com/twilson63/cloudq_client)
+
+## For a complete list of cloudq implementations visit our wiki
+
+[https://github.com/twilson63/cloudq_protocol/wiki](https://github.com/twilson63/cloudq_protocol/wiki)
 
 
-
-## Questions
-
-* What about authentication?
-* What about encryption?
-* What about monitoring?
-
-Since Cloudq Protocol is built on the basis of using http 1.1, then you can use toolkits like [Rack](http://rack.rubyforge.org/) and [Connect](http://senchalabs.github.com/connect/) to add middleware to your server.
-
-This middleware can contain authentication, encryption, logging, etc...
-
-* What about scheduling?
-
-Implement a worker process that receives a job to be scheduled, then published the 
-scheduled job when the alarm triggers.
 
